@@ -423,8 +423,12 @@ class Spotify:
             artist = self.get_id(artist, "artist")
 
         if artist is not None:
-            if include_groups is None:
-                include_groups = ['album', 'single', 'appears_on', 'compilation']
+            if isinstance(include_groups, list):
+                include_groups = ",".join(include_groups)
+            elif isinstance(include_groups, str):
+                include_groups += ","
+            else:
+                include_groups = ",".join(['album', 'single', 'appears_on', 'compilation'])
 
             payload = {"include_groups": include_groups, "limit": limit}
             path_params = [artist, "albums"]

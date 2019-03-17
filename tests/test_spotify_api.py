@@ -102,7 +102,7 @@ def test_get_category_playlists(spy, category):
 def test_get_recommendations(spy, track_ids, artist_ids):
     """Test getting recommendations based on seed info"""
     genres = ['sad', 'metal']
-    assert len(spy.get_recommendations(artist_ids, genres, track_ids)) > 0
+    assert len(spy.get_recommendations(artist_ids, track_ids, genres)) > 0
 
 
 def test_get_genre_seeds(spy):

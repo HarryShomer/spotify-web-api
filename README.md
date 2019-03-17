@@ -5,7 +5,7 @@ A extremely minimal client library for some portions of the spotify [web api](ht
 
 ## Install
 
-It's currently not on pip. Therefore to install it on your machine clone or download the repository and run either:
+It's currently not on pip. Therefore to install it on your machine either clone or download the repository and run either:
 
 ```
 pip setup.py install
@@ -77,10 +77,10 @@ Get the all tracks for an album
 spy.get_album_tracks("time will die and love will bury it")
 ```
 
-Get all the albums (LPs) for a specific artist
+Get all the albums (only LPs) for a specific artist
 
 ```python
-spy.get_artist_albums("converge")
+spy.get_artist_albums("converge", include_groups="album")
 ```
 
 Get all the spotify playlists for a specific category
