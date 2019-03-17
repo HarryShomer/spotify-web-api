@@ -1,4 +1,7 @@
-from spotify import Spotify
+"""
+Tests for the spotify_api.py file
+"""
+from spotify_web_api.spotify_api import Spotify
 import os
 import pytest
 
@@ -8,9 +11,9 @@ def spy():
     return Spotify()
 
 
-###############################
-##########  General  ##########
-###############################
+#################################################################
+######################### General API ###########################
+#################################################################
 
 def test_spotify_credentials():
     """ 
@@ -29,7 +32,7 @@ def test_access_token(spy):
 
 def test_token_expired(spy):
     """Test it can correctly tell if expired"""
-    assert spy.token_expired() == False
+    assert not spy.token_expired()
 
 
 def test_query(spy):
@@ -40,9 +43,14 @@ def test_query(spy):
     assert len(spy.query(query_type, payload)['artists']['items']) > 0
 
 
+#################################################################
+##########################  Search API ##########################
+#################################################################
+
+
 def test_search(spy):
     """Test that the search works properly"""
-    pass
+    assert len(spy.search("time will die and love will bury it", "album")['albums']['items']) > 0
 
 
 #################################################################

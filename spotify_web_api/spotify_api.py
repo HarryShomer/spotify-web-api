@@ -125,14 +125,19 @@ class Spotify:
         return self.query(query_type, payload)
 
 
+    #################################################################
+    ##########################  Search API ##########################
+    #################################################################
+
+
     def search(self, search_data, search_type, limit=3, market="US", offset=0):
         """
         Search for data
 
         https://api.spotify.com/v1/search
 
-        :param search_data: Search input - ['artist', 'album', 'playlist', 'track']
-        :param search_type: Type of search you are conducting
+        :param search_data: Search input 
+        :param search_type: Type of search you are conducting - - ['artist', 'album', 'playlist', 'track']
         :param limit: Number of albums to return 
         :param market: Only get from specific market where playable
         :param offset: index of first result to return
