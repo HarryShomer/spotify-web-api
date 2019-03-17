@@ -10,6 +10,34 @@ import pytest
 def spy():
     return Spotify()
 
+@pytest.fixture
+def artists():
+    return ["rolo tomassi", "converge"]
+
+@pytest.fixture
+def artist_ids():
+    return ["3uHCTHxtg3IVAvhyrYsZvI", "7kHzfxMLtVHHb523s43rY1"]
+
+@pytest.fixture
+def albums():
+    return ["the things we think we're missing", "in the aeroplane over the sea"]
+
+@pytest.fixture
+def album_ids():
+    return ["7a4k5NMwt4L4vbuV9Qy1gL", "5COXoP5kj2DWfCDg0vxi4F"]
+
+@pytest.fixture
+def tracks():
+    return ['beauty in falling leaves', 'me & my dog']
+
+@pytest.fixture
+def track_ids():
+    return ['6e32JnkTy46WgO1waYifJo', '4q9w3UGW3utmeUruBLUoZZ']
+
+@pytest.fixture
+def category():
+    return 'rock'
+
 
 #################################################################
 ######################### General API ###########################
@@ -26,8 +54,8 @@ def test_spotify_credentials():
 def test_access_token(spy):
     """Test we receive valid access token"""
     # It either includes or doesn't include 'scope'
-    assert list(spy.access_token.keys()) == ['access_token', 'token_type', 'expires_in'] or\
-           list(spy.access_token.keys()) == ['access_token', 'token_type', 'expires_in', 'scope']
+    assert list(spy._access_token.keys()) == ['access_token', 'token_type', 'expires_in'] or\
+           list(spy._access_token.keys()) == ['access_token', 'token_type', 'expires_in', 'scope']
 
 
 def test_token_expired(spy):
@@ -47,7 +75,6 @@ def test_query(spy):
 ##########################  Search API ##########################
 #################################################################
 
-
 def test_search(spy):
     """Test that the search works properly"""
     assert len(spy.search("time will die and love will bury it", "album")['albums']['items']) > 0
@@ -57,100 +84,146 @@ def test_search(spy):
 ##########################  Browse API ##########################
 #################################################################
 
-
 def test_get_categories(spy):
     """Test getting all the categories"""
-    pass
+    assert len(spy.get_categories()) > 0
 
-def test_get_cateogry(spy):
+
+def test_get_category(spy, category):
     """Test getting information for a given category"""
-    pass
+    assert spy.get_category(category)['id'] == category
 
-def test_get_category_playlists(spy):
+
+def test_get_category_playlists(spy, category):
     """Test getting the Spotify playlists for a given category"""
-    pass
+    assert len(spy.get_category_playlists(category)) > 0
 
-def test_get_recommendations(spy):
+
+def test_get_recommendations(spy, track_ids, artist_ids):
     """Test getting recommendations based on seed info"""
-    pass
+    genres = ['sad', 'metal']
+    assert len(spy.get_recommendations(artist_ids, genres, track_ids)) > 0
+
 
 def test_get_genre_seeds(spy):
     """Test getting the possible genre seeds for getting recommendations"""
-    pass
+    assert len(spy.get_genre_seeds()) > 0
+
 
 def test_get_featured_playlists(spy):
     """Test getting the featured playlists"""
-    pass
+    assert len(spy.get_featured_playlists()) > 0
+
+
+def test_get_new_releases(spy):
+    """Test getting the new releases"""
+    assert len(spy.get_new_releases()) > 0
 
 
 #################################################################
 ##########################  Artist API ##########################
 #################################################################
 
-
-def test_get_artists_ids(spy):
+def test_get_artist_ids(spy, artists, artist_ids):
     """Test retrieving artist ids from their names"""
-    pass
+    query = spy.get_ids(artists, "artist")
+    assert query[0] == artist_ids[0]
+    assert query[1] == artist_ids[1]
 
 
-def get_get_artists(spy):
+def test_get_artists(spy, artists, artist_ids):
     """
-    Test getting the artist from both name and id
+    Test getting the artist info from both name and id
     """
-    pass
+    # From name
+    assert len(spy.get_artists(artists)) == 2
+    # From id
+    assert len(spy.get_artists(artist_ids, artist_id=True)) == 2
 
 
-def test_get_artist_albums(spy):
+def test_get_artist_albums(spy, artists, artist_ids):
     """Test getting the albums for an artist"""
-    pass
+    # From name
+    assert len(spy.get_artist_albums(artists[1])) > 0
+    # From id
+    assert len(spy.get_artist_albums(artist_ids[1], artist_id=True)) > 0
 
 
-def test_get_top_tracks(spy):
+def test_get_top_tracks(spy, artists, artist_ids):
     """Test getting the top tracks for an artist"""
-    pass
+    # From name
+    assert len(spy.get_top_tracks(artists[0], "US")) > 0
+    # From id
+    assert len(spy.get_top_tracks(artist_ids[0], "US", artist_id=True)) > 0
 
 
-def test_get_related_artists(spy):
+def test_get_related_artists(spy, artists, artist_ids):
     """Test getting the related artist for an artist"""
-    pass
+    # From name
+    assert len(spy.get_related_artists(artists[0])) > 0
+    # From id
+    assert len(spy.get_related_artists(artist_ids[0], artist_id=True)) > 0
 
 
 #################################################################
 ##########################  Albums API ##########################
 #################################################################
 
-
-def test_get_albums_ids(spy):
+def test_get_album_ids(spy, albums, album_ids):
     """Test getting the album ids from and album names"""
-    pass
+    query = spy.get_ids(albums, "album")
+    assert query[0] == album_ids[0]
+    assert query[1] == album_ids[1]
 
 
-def test_get_albums(spy):
+def test_get_albums(spy, albums, album_ids):
     """Test getting albums from either name or id"""
-    pass
+    # From name
+    assert len(spy.get_albums(albums)) > 0
+    # From id
+    assert len(spy.get_albums(album_ids, album_id=True)) > 0
+
+
+def test_get_album_tracks(spy, albums, album_ids):
+    """Test getting the tracks for an album"""
+    # From name
+    assert len(spy.get_album_tracks(albums[1])) == 11
+    # From id
+    assert len(spy.get_album_tracks(album_ids[1], album_id=True)) == 11
 
 
 #################################################################
 ##########################  Tracks API ##########################
 #################################################################
 
+def test_get_track_ids(spy, tracks, track_ids):
+    """Test getting the album ids from and album names"""
+    query = spy.get_ids(tracks, "track")
+    assert query[0] == track_ids[0]
+    assert query[1] == track_ids[1]
 
-def get_album_tracks(spy):
-    """Test getting the tracks for an album"""
-    pass
 
-
-def get_tracks(spy):
+def test_get_tracks(spy, tracks, track_ids):
     """Test getting the info for a number of tracks"""
-    pass
+    # From name
+    assert len(spy.get_tracks(tracks)) == 2
+    # From id
+    assert len(spy.get_tracks(track_ids, track_id=True)) == 2
 
 
-def get_audio_features(spy):
+def test_get_audio_features(spy, tracks, track_ids):
     """Test getting the audio features for a number of tracks"""
-    pass
+    # From name
+    assert len(spy.get_audio_features(tracks)) == 2
+    # From id
+    assert len(spy.get_audio_features(track_ids, track_id=True)) == 2
 
-def get_audio_analysis(spy):
+
+def test_get_audio_analysis(spy, tracks, track_ids):
     """Test getting the audio analysis for a track"""
-    pass
+    # From name
+    assert "bars" in spy.get_audio_analysis(tracks[0])
+    # From id
+    assert "bars" in spy.get_audio_analysis(track_ids[0], track_id=True)
 
 
