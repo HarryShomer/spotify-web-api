@@ -19,7 +19,7 @@ pip setup.py develop
 
 ## Supported APIs
 
-As of right now only the following Spotify Web APIs are supported:
+As of right now only the following sections of the API are supported:
 
 * [Browse](https://developer.spotify.com/documentation/web-api/reference/browse/)
 * [Artists](https://developer.spotify.com/documentation/web-api/reference/artists/)
@@ -27,7 +27,7 @@ As of right now only the following Spotify Web APIs are supported:
 * [Albums](https://developer.spotify.com/documentation/web-api/reference/albums/)
 * [Search](https://developer.spotify.com/documentation/web-api/reference/search/search/)
 
-The following sections of API aren't covered:
+The following sections of the API aren't covered:
 
 * [Follow](https://developer.spotify.com/documentation/web-api/reference/follow/)
 * [Library](https://developer.spotify.com/documentation/web-api/reference/library/)
