@@ -99,7 +99,7 @@ spy.get_audio_features(tracks)
 Search for a specific track, album, artist, or playlist
 
 ```python
-spy.search("deathspell omega", "artist")
+spy.search("imperial triumphant", "artist")
 ```
 
 ## Tests
