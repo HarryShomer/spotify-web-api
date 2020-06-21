@@ -10,11 +10,11 @@ Sections of API covered:
     - Tracks
     - Albums
     - Search
+    - Personalization
     
 Sections of API not covered:
     - Follow
     - Library
-    - Personalization
     - Player
     - Playlists
     - User Profile
@@ -25,7 +25,9 @@ import base64
 import os
 import time
 import requests
+from math import ceil
 from datetime import datetime
+import itertools
 
 TOKEN_URL = "https://accounts.spotify.com/api/token"
 ACCESS_URL = "https://api.spotify.com/v1/me"
@@ -35,6 +37,12 @@ BASE_URL = "https://api.spotify.com/v1/"
 CAT_IDS = ['toplists', 'pop', 'hiphop', 'mood', 'workout', 'decades', 'country', 'focus', 'latin', 'chill', 'edm_dance',
            'rnb', 'rock', 'indie_alt', 'roots', 'party', 'sleep', 'classical', 'jazz', 'inspirational']
 
+
+def grouper(n, iterable, padvalue=None):
+    """
+    Split a list into n even chunks
+    """
+    return itertools.zip_longest(*[iter(iterable)]*n, fillvalue=padvalue)
 
 
 class Spotify:
@@ -61,7 +69,7 @@ class Spotify:
 
         :param: refresh_token: Refresh to get auth token
 
-        access_token = {access_token, token_type, expires_in (seconds)}
+        :return: None
         """
         post_data = {"grant_type": "client_credentials"}
 
@@ -81,7 +89,7 @@ class Spotify:
         """
         If the current token has expired
 
-        :return boolean - True if expired
+        :return: boolean - True if expired
         """
         return time.time() - self._token_start_time >= self._access_token['expires_in']
 
@@ -93,7 +101,7 @@ class Spotify:
         :param query_type: Query to make
         :param payload: Associated parameters
 
-        :return response json
+        :return: response json
         """
         if self.token_expired():
             self.get_access_token()
@@ -128,7 +136,7 @@ class Spotify:
         :param search_vals: What you are searching for
         :param search_type: Type of item you are searching for
 
-        :return ids -> List of corresponding ids
+        :return: ids -> List of corresponding ids
         """
         # I only use the api endpoint that allows 1 or more artists
         # So we come here whenever there exist the single and multiple options
@@ -155,7 +163,7 @@ class Spotify:
         :param search_val: What you are searching for
         :param search_type: Type of item you are searching for
 
-        :return id or None
+        :return: id or None
         """
         response = self.get_ids([search_val], search_type)
         if response:
@@ -179,7 +187,7 @@ class Spotify:
         :param market: Only get from specific market where playable
         :param offset: index of first result to return
 
-        :return response data
+        :return: response data
         """
         if not search_type in ['artist', 'album', 'playlist', 'track'] and isinstance(search_data, str):
             print("Not a valid search type")
@@ -256,7 +264,7 @@ class Spotify:
             raise ValueError(f"{category} is not one of the possible category ids")
 
         if not 51 > limit > 0:
-            raise ValueError("Limit must be between 0 and 50")
+            raise ValueError("Can only retrieve a maximum of 50 category playlists")
 
         payload = {"country": country, "limit": limit, "offset": offset}
         path_params = ["categories", category.lower(), "playlists"]
@@ -275,8 +283,9 @@ class Spotify:
         """
         return self.path_query("recommendations", {}, ["available-genre-seeds"]).get("genres", [])
 
-    # TODO: Get this took work
-    # TODO: Add min, max, and target params for tunable track attributes
+
+    # TODO: Get this to work
+    # TODO: Add min, max, and target params for tuneable track attributes
     def get_recommendations(self, seed_artists, seed_tracks, seed_genres, limit=20, market="US"):
         """
         Get recommendations for new music
@@ -292,7 +301,7 @@ class Spotify:
         :return: 
         """
         if not 101 > limit > 0:
-            raise ValueError("Limit must be between 0 and 100")
+            raise ValueError("Can only retrieve a maximum of 100 recommendations")
 
         # If supply strings for any of the seeds then convert to a list
         if isinstance(seed_artists, str):
@@ -338,7 +347,7 @@ class Spotify:
                 raise ValueError("The timestamp isn't in the correct format should be %Y-%m-%dT%H:%M:%S")
 
         if not 51 > limit > 0:
-            raise ValueError("Limit must be between 0 and 50")
+            raise ValueError("Can only retrieve a maximum of 50 featured playlists")
 
         payload = {
             "timestamp": timestamp,
@@ -366,7 +375,7 @@ class Spotify:
         :return: list of album objects
         """
         if not 51 > limit > 0:
-            raise ValueError("Limit must be between 0 and 50")
+            raise ValueError("Can only retrieve a maximum of 50 new releases")
 
         payload = {"country": country, "limit": limit, "offset": offset}
         path_params = ['new-releases']
@@ -388,7 +397,7 @@ class Spotify:
         :param artists: Artist to query -> List, str, int
         :param artist_id: If supplying ids or names
 
-        :return list of artist objects
+        :return: list of artist objects
         """
         if len(artists) > 50:
             raise ValueError("Can only retrieve a maximum of 50 artists")
@@ -414,10 +423,10 @@ class Spotify:
         :param include_groups: str, list, None
         :param limit: Number to return
 
-        :return list of album objects
+        :return: list of album objects
         """
         if not 51 > limit > 0:
-            raise ValueError("Limit must be between 0 and 50")
+            raise ValueError("Can only retrieve a maximum of 50 artist albums")
 
         if not artist_id:
             artist = self.get_id(artist, "artist")
@@ -447,7 +456,7 @@ class Spotify:
         :param country: Country to get shift from
         :param artist_id: If providing id
 
-        :return list of track objects
+        :return: list of track objects
         """
         if not artist_id:
             artist = self.get_id(artist, "artist")
@@ -496,7 +505,7 @@ class Spotify:
         :param album_id: If supplying ids
         :param market: Market to draw from
 
-        :return list of album objects
+        :return: list of album objects
         """
         if isinstance(albums, list) and len(albums) > 20:
             raise ValueError("Can only request a maximum of 20 albums")
@@ -522,7 +531,7 @@ class Spotify:
         :param limit: # of items to return
         :param market: Market to take from
 
-        :return list of album tracks
+        :return: list of album tracks
         """
         if not 51 > limit > 0:
             raise ValueError("Limit must be between 0 and 50")
@@ -553,7 +562,7 @@ class Spotify:
         :param track_id: If supplied ids or name
         :param market: where to drawn info from
 
-        :return list of tracks
+        :return: list of tracks
         """
         if isinstance(tracks, list) and len(tracks) > 50:
             raise ValueError("Can only request a maximum of 50 tracks")
@@ -577,14 +586,28 @@ class Spotify:
         :param tracks: IDs or names of tracks
         :param track_id: If supplied ids or name
 
-        :return list of tracks
+        :return: list of tracks
         """
         if not track_id:
             tracks = self.get_ids(tracks, "track")
 
         if tracks:
-            results = self.query("audio-features", {"ids": ",".join(tracks)})
-            return results.get("audio_features", [])
+            # Limit of 100 tracks per GET so we'll chop it up 
+            # and do it 100 (or less) at a time
+            if len(tracks) > 100:
+                results = []
+                for chunk in list(grouper(ceil(len(tracks)/100), tracks)):
+                    # When not divisible by 100 we'll get Nones added on
+                    chunk = list(filter(None.__ne__, chunk))
+
+                    chunk_query = self.query("audio-features", {"ids": ",".join(chunk)})
+                    results.append(chunk_query.get("audio_features", []))
+
+                # Flatten list
+                return list(itertools.chain.from_iterable(results))
+            else:
+                results = self.query("audio-features", {"ids": ",".join(tracks)})
+                return results.get("audio_features", [])
 
 
     def get_audio_analysis(self, track, track_id=False):
@@ -596,11 +619,60 @@ class Spotify:
         :param track: ID or names of track
         :param track_id: If supplied ids or name
 
-        :return dict of info
+        :return: list of dicts (each is a track)
         """
         if not track_id:
             track = self.get_id(track, "track")
 
         if track is not None:
-            return self.path_query("audio-analysis", {}, [track])
+            return self.path_query("audio-analysis", {}, [track])['tracks']
+
+
+
+    #################################################################
+    ########################  Playlist API ##########################
+    #################################################################
+
+    def get_playlist(self, playlist_id):
+        """
+        Get info on playlist
+
+        :param playlist_id spotify id for playlist
+
+        :return: dict of info
+        """
+        path_params = [playlist_id]
+        return self.path_query("playlists", {}, path_params)
+
+
+    def get_playlist_tracks(self, playlist_id):
+        """
+        Returns the tracks in a playlist
+
+        https://api.spotify.com/v1/playlists/{playlist_id} 
+
+        :param playlist_id: spotify id for playlist
+        :param num_tracks: Number of tracks to return
+
+        :return: list of tracks (each is a dict)
+        """
+        limit = 100
+        tracks = []
+        path_params = [playlist_id, "tracks"]
+
+        num_tracks = self.get_playlist(playlist_id)['tracks']['total']
+
+        # The Api only allows 100 at a time
+        # We can change the offset (index) where to start from though
+        # So we keep going through the list taking 100 at a time
+        for offset in range(0, num_tracks, limit):
+            payload = {"offset": offset}
+            query_tracks = self.path_query("playlists", payload, path_params)['items']
+
+            # Add tracks for this query to the total tracks gotten so far
+            for t in query_tracks:
+                tracks.append(t)
+
+        return tracks
+
 

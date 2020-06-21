@@ -7,12 +7,10 @@ def read():
 
 setup(
     name='spotify_web_api',
-    version='0.0.1',
+    version='0.0.2',
     description="""An extremely minimal client library for the spotify web api""",
     long_description=read(),
     classifiers=[
-        "Development Status :: 5 - Production/Stable",
-        'Intended Audience :: Science/Research',
         "License :: OSI Approved :: MIT License",
         'Programming Language :: Python :: 3',
     ],
